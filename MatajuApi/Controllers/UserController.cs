@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MatajuApi.Models;
 using MatajuApi.Helpers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MatajuApi.Controllers
 {
@@ -9,13 +10,13 @@ namespace MatajuApi.Controllers
     public class UserController : ControllerBase
     {
         /// <summary>
-       /// 임시:  In-memory 스태틱 레포지토리 (TODO: DB로 변경하기)
-       /// </summary>
+        /// 임시:  In-memory 스태틱 레포지토리 (TODO: DB로 변경하기)
+        /// </summary>
         private static readonly List<User> Users = new();
 
         /// <summary>
-       /// 새로운 사용자 등록
-       /// </summary>
+        /// 새로운 사용자 등록
+        /// </summary>
         [HttpPost("register")]
         public IActionResult RegisterUser([FromBody] UserRegisterReqDto userInput)
         {
@@ -80,6 +81,25 @@ namespace MatajuApi.Controllers
                           Nickname = user.Nickname,
                           Token = token,
                           JwtPublicKey = publicKeyPem
+                      });
+        }
+
+        [HttpGet("{id}")]
+        [Authorize]
+        public IActionResult GetUserById(int id)
+        {
+            var user = Users.FirstOrDefault(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound("유저를 찾을 수 없습니다.");
+            }
+
+            return Ok(new
+                      {
+                          UserId = user.Id,
+                          Name = user.Name,
+                          Nickname = user.Nickname,
+                          Roles = user.Roles
                       });
         }
     }
