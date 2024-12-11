@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
+using Microsoft.OpenApi.Models;
 
 /*******************
  * Web Host Builder
@@ -32,7 +33,39 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Swagger에 JWT 인증 스키마 추가
+builder.Services.AddSwaggerGen(c =>
+                               {
+                                   c.SwaggerDoc("v1", new OpenApiInfo { Title = "MatajuApi", Version = "v1" });
+
+                                   // Bearer 인증 스키마 정의
+                                   c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                                                                     {
+                                                                         In = ParameterLocation.Header,
+                                                                         Name = "Authorization",
+                                                                         Type = SecuritySchemeType.ApiKey,
+                                                                         Scheme = "Bearer",
+                                                                         BearerFormat = "JWT",
+                                                                         Description =
+                                                                             "Bearer schem을 사용한 JWT Authorization header. 예제: \"Bearer {token}\""
+                                                                     });
+
+                                   // Bearer 인증 스키마를 기본 인증 방식으로 추가
+                                   c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                                                            {
+                                                                {
+                                                                    new OpenApiSecurityScheme
+                                                                    {
+                                                                        Reference = new OpenApiReference
+                                                                                    {
+                                                                                        Type = ReferenceType.SecurityScheme,
+                                                                                        Id = "Bearer"
+                                                                                    }
+                                                                    },
+                                                                    Array.Empty<string>()
+                                                                }
+                                                            });
+                               });
 
 var app = builder.Build();
 
