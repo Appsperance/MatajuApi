@@ -8,12 +8,14 @@ namespace MatajuApi.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        // 임시:  In-memory 스태틱 레포지토리 (TODO: DB로 변경하기)
+        /// <summary>
+       /// 임시:  In-memory 스태틱 레포지토리 (TODO: DB로 변경하기)
+       /// </summary>
         private static readonly List<User> Users = new();
 
         /// <summary>
-        /// 새로운 사용자 등록
-        /// </summary>
+       /// 새로운 사용자 등록
+       /// </summary>
         [HttpPost("register")]
         public IActionResult RegisterUser([FromBody] UserRegisterReqDto userInput)
         {
@@ -50,6 +52,34 @@ namespace MatajuApi.Controllers
                           newUser.Name,
                           newUser.Nickname,
                           newUser.Roles
+                      });
+        }
+
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] UserLoginReqDto loginInput, [FromServices] IConfiguration configuration)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // 사용자 검증
+            var user = Users.FirstOrDefault(u => u.Name == loginInput.Name);
+            if (user == null || !PwdHasher.VerifyHash(loginInput.Password, user.Salt, user.Password))
+            {
+                return Unauthorized("사용자 name 또는 password가 유효하지 않습니다.");
+            }
+
+
+            string token = JwtHelper.GenerateToken(user, configuration);
+            string publicKeyPem = configuration["Jwt:PublicKey"];
+
+            return Ok(new
+                      {
+                          UserId = user.Id,
+                          Nickname = user.Nickname,
+                          Token = token,
+                          JwtPublicKey = publicKeyPem
                       });
         }
     }
