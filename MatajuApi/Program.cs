@@ -2,17 +2,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using Microsoft.OpenApi.Models;
+using MatajuApi.Helpers;
 
 /*******************
  * Web Host Builder
  *******************/
 var builder = WebApplication.CreateBuilder(args);
 
-// JWT Public Key 로드
-string publicKey = builder.Configuration["Jwt:PublicKey"];
-var rsa = RSA.Create();
-rsa.ImportFromPem(publicKey.ToCharArray());
-var signingKey = new RsaSecurityKey(rsa);
 
 /* DI Container   ******************/
 // JWT 인증 설정
@@ -27,7 +23,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                                                                  ValidateIssuerSigningKey = true,
                                                                  ValidIssuer = builder.Configuration["Jwt:Issuer"],
                                                                  ValidAudience = builder.Configuration["Jwt:Audience"],
-                                                                 IssuerSigningKey = signingKey
+                                                                 IssuerSigningKey = JwtHelper.GetPublicKey(builder.Configuration)
                                                              };
                      });
 builder.Services.AddControllers();
