@@ -61,6 +61,16 @@ builder.Services.AddSwaggerGen(c =>
                                                                     Array.Empty<string>()
                                                                 }
                                                             });
+                                   // 환경 변수로 서버 경로 추가
+                                   var swaggerBasePath = Environment.GetEnvironmentVariable("SwaggerBasePath") ?? string.Empty;
+                                   if (!string.IsNullOrEmpty(swaggerBasePath))
+                                   {
+                                       c.AddServer(new OpenApiServer
+                                                   {
+                                                       Url = swaggerBasePath,
+                                                       Description = "Base URL for the API"
+                                                   });
+                                   }
                                });
 
 var app = builder.Build();
