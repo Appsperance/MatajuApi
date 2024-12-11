@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MatajuApi.Controllers
 {
+    /// <summary>
+    /// 유저가입,로그인(토큰발급),유저조회등 유저API 콘트롤러
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
@@ -17,6 +20,8 @@ namespace MatajuApi.Controllers
         /// <summary>
         /// 새로운 사용자 등록
         /// </summary>
+        /// <param name="userInput">가입할 유저정보 객체 (Name,Password,Nickname)</param>
+        /// <returns>등록성공한 유저정보</returns>
         [HttpPost("register")]
         public IActionResult RegisterUser([FromBody] UserRegisterReqDto userInput)
         {
@@ -34,16 +39,16 @@ namespace MatajuApi.Controllers
             string hashedPassword = PwdHasher.GenerateHash(userInput.Password, out string salt);
 
             // Create new user
-            var newUser = new User
-                          {
-                              // 임시ID 증가: TODO: DB에 위임하기
-                              Id = Users.Count > 0 ? Users.Max(u => u.Id) + 1 : 1,
-                              Name = userInput.Name,
-                              Password = hashedPassword,
-                              Salt = salt,
-                              Nickname = userInput.Nickname,
-                              Roles = "user"
-                          };
+            User newUser = new User
+                           {
+                               // 임시ID 증가: TODO: DB에 위임하기
+                               Id = Users.Count > 0 ? Users.Max(u => u.Id) + 1 : 1,
+                               Name = userInput.Name,
+                               Password = hashedPassword,
+                               Salt = salt,
+                               Nickname = userInput.Nickname,
+                               Roles = "user"
+                           };
 
             // Add to storage
             Users.Add(newUser);
@@ -56,6 +61,12 @@ namespace MatajuApi.Controllers
                       });
         }
 
+        /// <summary>
+        /// 로그인
+        /// </summary>
+        /// <param name="loginInput">UserLoginReqDto객체(Name , Password)</param>
+        /// <param name="configuration">DI에서 주입되는 IConfiguration 객체</param>
+        /// <returns>유저ID,Nickname,로그인토큰,Jwt 공개키</returns>
         [HttpPost("login")]
         public IActionResult Login([FromBody] UserLoginReqDto loginInput, [FromServices] IConfiguration configuration)
         {
@@ -65,7 +76,7 @@ namespace MatajuApi.Controllers
             }
 
             // 사용자 검증
-            var user = Users.FirstOrDefault(u => u.Name == loginInput.Name);
+            User? user = Users.FirstOrDefault(u => u.Name == loginInput.Name);
             if (user == null || !PwdHasher.VerifyHash(loginInput.Password, user.Salt, user.Password))
             {
                 return Unauthorized("사용자 name 또는 password가 유효하지 않습니다.");
@@ -84,11 +95,16 @@ namespace MatajuApi.Controllers
                       });
         }
 
-        [HttpGet("{id}")]
+        /// <summary>
+        /// 유저조회
+        /// </summary>
+        /// <param name="id">UserId</param>
+        /// <returns>유저정보</returns>
+        [HttpGet("{id:int}")]
         [Authorize]
         public IActionResult GetUserById(int id)
         {
-            var user = Users.FirstOrDefault(u => u.Id == id);
+            User? user = Users.FirstOrDefault(u => u.Id == id);
             if (user == null)
             {
                 return NotFound("유저를 찾을 수 없습니다.");
