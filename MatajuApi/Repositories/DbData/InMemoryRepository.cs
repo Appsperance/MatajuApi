@@ -22,13 +22,16 @@ public class InMemoryRepository<T> : IRepository<T> where T : class
     private int _nextId = 1;
 
 
-    public IEnumerable<T> GetAll() => _allEntities;
-
     public T? GetById(int id)
     {
         PropertyInfo? property = GetIdProperty();
 
         return _allEntities.FirstOrDefault(entity => (int)property.GetValue(entity, null)! == id);
+    }
+
+    public IEnumerable<T> Find(Expression<Func<T, bool>> predicate)
+    {
+        return _allEntities.AsQueryable().Where(predicate).ToList();
     }
 
     public bool Exists(Expression<Func<T, bool>> predicate) => _allEntities.AsQueryable().Any(predicate);

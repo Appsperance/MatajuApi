@@ -79,7 +79,7 @@ namespace MatajuApi.Controllers
             }
 
             // 사용자 검증
-            User? user = _userTableRepo.GetAll().FirstOrDefault(u => u.Name == loginInput.Name);
+            User? user = _userTableRepo.Find(u => u.Name == loginInput.Name).FirstOrDefault();
             if (user == null || !PwdHasher.VerifyHash(loginInput.Password, user.Salt, user.Password))
             {
                 return Unauthorized("사용자 name 또는 password가 유효하지 않습니다.");

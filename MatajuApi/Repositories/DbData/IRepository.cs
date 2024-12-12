@@ -9,17 +9,18 @@ namespace MatajuApi.Repositories;
 public interface IRepository<T> where T : class
 {
     /// <summary>
-    /// 모든 레코드 읽기
-    /// </summary>
-    /// <returns>테이블의 모든 레코드(행) </returns>
-    IEnumerable<T> GetAll();
-
-    /// <summary>
     /// Id에 해당하는 하나의 행 읽기
     /// </summary>
     /// <param name="id">테이블의 Id칼럼(PK) 값</param>
     /// <returns></returns>
     T? GetById(int id);
+
+    /// <summary>
+    /// 조건에 따라 여러 레코드 읽기
+    /// </summary>
+    /// <param name="predicate">조건을 나타내는 람다식 - 표현식 트리(Expression Trees)</param>
+    /// <returns>조건에 맞는 레코드 목록</returns>
+    IEnumerable<T> Find(Expression<Func<T, bool>> predicate);
 
     /// <summary>
     /// 조건에 따라 코드 존재 여부 확인
