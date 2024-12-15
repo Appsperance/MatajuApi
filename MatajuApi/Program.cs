@@ -3,6 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using Microsoft.OpenApi.Models;
 using MatajuApi.Helpers;
+using MatajuApi.Models;
+using MatajuApi.Repositories;
 
 /*******************
  * Web Host Builder
@@ -10,7 +12,7 @@ using MatajuApi.Helpers;
 var builder = WebApplication.CreateBuilder(args);
 
 
-/* DI Container   ******************/
+/*****************   DI Container   ******************/
 // JWT 인증 설정
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
        .AddJwtBearer(options =>
@@ -72,6 +74,8 @@ builder.Services.AddSwaggerGen(c =>
                                                    });
                                    }
                                });
+builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
+builder.Services.AddSingleton<IRepository<House>, InMemoryRepository<House>>();
 
 var app = builder.Build();
 

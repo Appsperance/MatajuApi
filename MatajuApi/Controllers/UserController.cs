@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MatajuApi.Models;
 using MatajuApi.Helpers;
 using Microsoft.AspNetCore.Authorization;
+using MatajuApi.Repositories;
 
 namespace MatajuApi.Controllers
 {
@@ -12,10 +13,16 @@ namespace MatajuApi.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
+        private readonly IRepository<User> _userTableRepo;
+
         /// <summary>
-        /// 임시:  In-memory 스태틱 레포지토리 (TODO: DB로 변경하기)
+        /// 생성자
         /// </summary>
-        private static readonly List<User> Users = new();
+        /// <param name="userTableRepo">Program DI로 주입되는 User 레포지토리</param>
+        public UserController(IRepository<User> userTableRepo)
+        {
+            _userTableRepo = userTableRepo;
+        }
 
         /// <summary>
         /// 새로운 사용자 등록
@@ -31,18 +38,15 @@ namespace MatajuApi.Controllers
             }
 
             // 사용자 이름 중복체크. 409 Conflict 응답
-            if (Users.Any(u => u.Name == userInput.Name))
+            if (_userTableRepo.Exists(u => u.Name == userInput.Name))
             {
                 return Conflict($"유저네임: '{userInput.Name}'은 이미 존재합니다.");
             }
 
             string hashedPassword = PwdHasher.GenerateHash(userInput.Password, out string salt);
 
-            // Create new user
             User newUser = new User
                            {
-                               // 임시ID 증가: TODO: DB에 위임하기
-                               Id = Users.Count > 0 ? Users.Max(u => u.Id) + 1 : 1,
                                Name = userInput.Name,
                                Password = hashedPassword,
                                Salt = salt,
@@ -50,8 +54,7 @@ namespace MatajuApi.Controllers
                                Roles = "user"
                            };
 
-            // Add to storage
-            Users.Add(newUser);
+            _userTableRepo.Add(newUser);
 
             return Ok(new
                       {
@@ -76,7 +79,7 @@ namespace MatajuApi.Controllers
             }
 
             // 사용자 검증
-            User? user = Users.FirstOrDefault(u => u.Name == loginInput.Name);
+            User? user = _userTableRepo.Find(u => u.Name == loginInput.Name).FirstOrDefault();
             if (user == null || !PwdHasher.VerifyHash(loginInput.Password, user.Salt, user.Password))
             {
                 return Unauthorized("사용자 name 또는 password가 유효하지 않습니다.");
@@ -104,7 +107,7 @@ namespace MatajuApi.Controllers
         [Authorize]
         public IActionResult GetUserById(int id)
         {
-            User? user = Users.FirstOrDefault(u => u.Id == id);
+            User? user = _userTableRepo.GetById(id);
             if (user == null)
             {
                 return NotFound("유저를 찾을 수 없습니다.");
