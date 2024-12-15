@@ -46,11 +46,7 @@ public class AdminController : ControllerBase
                                new House { Add = "경상남도 창원시 성산구 중앙대로 30번길 15", Province = "경상남도", PriceS = 21000, PriceM = 28000, PriceL = 45000 }
                            };
 
-        // 데이터 추가
-        foreach (var house in sampleHouses)
-        {
-            _houseTableRepo.Add(house);
-        }
+        _houseTableRepo.SetInitialData(sampleHouses);
 
         return Ok(new
                   {

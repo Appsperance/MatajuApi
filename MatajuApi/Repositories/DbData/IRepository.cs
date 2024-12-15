@@ -56,7 +56,7 @@ public interface IRepository<T> where T : class
     void Clear();
 
     /// <summary>
-    /// 정해진 초기 데이터 시딩
+    /// 정해진 초기 데이터 시딩. Id까지 초기화
     /// </summary>
     /// <param name="entities">초기화할 데이터 목록</param>
     void SetInitialData(IEnumerable<T> entities);
