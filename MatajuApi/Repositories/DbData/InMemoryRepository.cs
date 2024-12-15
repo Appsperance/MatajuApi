@@ -65,6 +65,25 @@ public class InMemoryRepository<T> : IRepository<T> where T : class
             _allEntities.Remove(existing);
     }
 
+#region Data Seeding : //TODO: 삭제
+
+    public void Clear()
+    {
+        _allEntities.Clear();
+        _nextId = 1; // Auto-Increment 초기화
+    }
+
+    public void SetInitialData(IEnumerable<T> entities)
+    {
+        Clear();
+        foreach (var entity in entities)
+        {
+            Add(entity);
+        }
+    }
+
+#endregion
+
     /// <summary>
     /// 엔티티 모델인 T 클래스의 Id 프라퍼티(변수)에 대한 메타정보를 반환한다. Id라는 프라파터가 반드시 존재해야하며, 없다면 예외를 던진다. 
     /// </summary>
