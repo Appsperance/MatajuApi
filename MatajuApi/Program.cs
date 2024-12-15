@@ -28,7 +28,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                                                                  IssuerSigningKey = JwtHelper.GetPublicKey(builder.Configuration)
                                                              };
                      });
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+                                                 {
+                                                     options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+                                                 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 // Swagger에 JWT 인증 스키마 추가
@@ -77,7 +80,6 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
 builder.Services.AddSingleton<IRepository<House>, InMemoryRepository<House>>();
 builder.Services.AddSingleton<IRepository<Unit>, InMemoryRepository<Unit>>();
-
 var app = builder.Build();
 
 
