@@ -76,6 +76,7 @@ builder.Services.AddSwaggerGen(c =>
                                });
 builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
 builder.Services.AddSingleton<IRepository<House>, InMemoryRepository<House>>();
+builder.Services.AddSingleton<IRepository<Unit>, InMemoryRepository<Unit>>();
 
 var app = builder.Build();
 

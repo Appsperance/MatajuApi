@@ -9,14 +9,16 @@ namespace MatajuApi.Controllers;
 public class AdminController : ControllerBase
 {
     private readonly IRepository<House> _houseTableRepo;
+    private readonly IRepository<Unit> _unitRepo;
 
     /// <summary>
     /// 생성자
     /// </summary>
     /// <param name="houseTableRepo">Program DI로 주입되는 House 레포지토리</param>
-    public AdminController(IRepository<House> houseTableRepo)
+    public AdminController(IRepository<House> houseTableRepo, IRepository<Unit> unitRepo)
     {
         _houseTableRepo = houseTableRepo;
+        _unitRepo = unitRepo;
     }
 
     /// <summary>
@@ -53,5 +55,61 @@ public class AdminController : ControllerBase
                       Message = $"{sampleHouses.Count}개의 House 데이터가 추가되었구유.",
                       Houses = sampleHouses
                   });
+    }
+
+    /// <summary>
+    /// Unit 레포지토리에 임의의 데이터 추가 (개발용 임시 엔드포인트)
+    /// </summary>
+    /// <returns>모든 Unit 목록</returns>
+    [HttpPost("seed-units")]
+    public IActionResult SeedUnits()
+    {
+        var random = new Random();
+        var sampleUnits = new List<Unit>();
+
+        foreach (var house in _houseTableRepo.Find(h => true)) // 모든 House 가져오기
+        {
+            int houseId = house.Id;
+
+            // 각 크기별 유닛 생성
+            int numberOfSizeL = random.Next(5, 9);
+            sampleUnits.AddRange(GenerateUnits(houseId, UnitSize.L, numberOfSizeL));
+
+            int numberOfSizeM = random.Next(10, 21);
+            sampleUnits.AddRange(GenerateUnits(houseId, UnitSize.M, numberOfSizeM));
+
+            int numberOfSizeS = random.Next(10, 16);
+            sampleUnits.AddRange(GenerateUnits(houseId, UnitSize.S, numberOfSizeS));
+        }
+
+        _unitRepo.SetInitialData(sampleUnits);
+
+        return Ok(new
+                  {
+                      Message = $"{sampleUnits.Count}개의 Unit 데이터가 초기화되었습니다.",
+                      Units = sampleUnits
+                  });
+    }
+
+    /// <summary>
+    /// 특정 사이즈에대한 Unit 엔티티를 count만큼 생성한다. 
+    /// </summary>
+    /// <param name="houseId">유닛이 속한 House 레코드 Id</param>
+    /// <param name="size">유닛크기(S,M,L)</param>
+    /// <param name="count">이 사이즈의 유닛 총 갯수</param>
+    /// <returns>Unit 모델 객체 목록</returns>
+    private IEnumerable<Unit> GenerateUnits(int houseId, UnitSize size, int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            yield return new Unit
+                         {
+                             HouseId = houseId,
+                             Size = size,
+                             Status = UnitStatus.Available,
+                             StartDate = null,
+                             EndDate = null
+                         };
+        }
     }
 }

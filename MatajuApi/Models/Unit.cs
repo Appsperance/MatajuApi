@@ -16,7 +16,7 @@ public class Unit
     /// <summary>
     /// 예약자 (예약신청자, 사용중인자, 비움신청자) 
     /// </summary>
-    public int UserId { get; set; }
+    public int? UserId { get; set; }
 
     /// <summary>
     /// 유닛이 소속된 창고지점(Warehouse)
@@ -32,8 +32,8 @@ public class Unit
     [Column(TypeName = "varchar(25)")]
     public UnitStatus Status { get; set; }
 
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
 }
 
 /// <summary>
