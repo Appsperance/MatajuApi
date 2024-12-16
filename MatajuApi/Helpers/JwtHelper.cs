@@ -29,9 +29,10 @@ namespace MatajuApi.Helpers
             // 클레임 생성
             Claim[] claims = new[]
                              {
+                                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                                  new Claim(ClaimTypes.Name, user.Name),
-                                 new Claim(ClaimTypes.Role, user.Roles),
-                                 new Claim("Nickname", user.Nickname)
+                                 new Claim("Nickname", user.Nickname),
+                                 new Claim(ClaimTypes.Role, user.Roles)
                              };
 
             // JWT 생성
