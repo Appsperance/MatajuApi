@@ -54,6 +54,16 @@ public class Booking
     /// </summary>
     [Column(TypeName = "varchar(25)")]
     public BookingStatus Status { get; set; }
+
+    /// <summary>
+    /// 예약자의 메시지
+    /// </summary>
+    public string UserNote { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 관리자 메모
+    /// </summary>
+    public string AdminNote { get; set; } = string.Empty;
 }
 
 /// <summary>

@@ -123,6 +123,7 @@ public class AdminController : ControllerBase
         booking.Status = BookingStatus.Completed;
         booking.PaymentDate = request.PaymentDate;
         booking.PaymentMethod = request.PaymentMethod;
+        booking.AdminNote = request.AdminNote;
         _bookingRepo.Update(booking);
 
         // Unit 상태 업데이트
@@ -141,9 +142,10 @@ public class AdminController : ControllerBase
     /// 예약 거부
     /// </summary>
     /// <param name="bookingId">거부할 Booking ID</param>
+    /// <param name="request">거부사유(필수)가 포함된 데이터</param>
     /// <returns>거부 결과</returns>
     [HttpPost("reject-booking/{bookingId:int}")]
-    public IActionResult RejectBooking(int bookingId)
+    public IActionResult RejectBooking(int bookingId, [FromBody] BookingRejectionReqDto request)
     {
         Booking? booking = _bookingRepo.GetById(bookingId);
         if (booking == null)
@@ -158,6 +160,7 @@ public class AdminController : ControllerBase
         }
 
         booking.Status = BookingStatus.Rejected;
+        booking.AdminNote = request.AdminNote;
         _bookingRepo.Update(booking);
 
         // Unit 상태 초기화

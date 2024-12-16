@@ -18,4 +18,9 @@ public class BookingApprovalReqDto
     /// </summary>
     [Required]
     public PaymentMethod PaymentMethod { get; set; }
+
+    /// <summary>
+    /// 관리자 메모
+    /// </summary>
+    public string AdminNote { get; set; } = string.Empty;
 }
