@@ -80,6 +80,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
 builder.Services.AddSingleton<IRepository<House>, InMemoryRepository<House>>();
 builder.Services.AddSingleton<IRepository<Unit>, InMemoryRepository<Unit>>();
+builder.Services.AddSingleton<IRepository<Booking>, InMemoryRepository<Booking>>();
 var app = builder.Build();
 
 

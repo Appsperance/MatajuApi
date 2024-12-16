@@ -35,16 +35,19 @@ public class Booking
     public BookingType Type { get; set; }
 
     /// <summary>
-    /// 총 예약 금액
+    /// 예약기간 계산 금액 (Unit Price / 30 * days)
     /// </summary>
-    public int Price { get; set; }
+    public int Charge { get; set; }
 
     /// <summary>
-    /// 입금확인 날짜. 
+    /// 비용 지불된 날짜 
     /// </summary>
     public DateTime? PaymentDate { get; set; }
 
-    public PaymentMethod PaymentMethod { get; set; }
+    /// <summary>
+    /// 비용 지불 수단
+    /// </summary>
+    public PaymentMethod? PaymentMethod { get; set; }
 
     /// <summary>
     /// 예약 처리 상태
@@ -72,6 +75,9 @@ public enum BookingStatus
     Completed, // 완료됨
 }
 
+/// <summary>
+/// 비용 지불 수단
+/// </summary>
 public enum PaymentMethod
 {
     Cash,
