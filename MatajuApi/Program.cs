@@ -35,12 +35,12 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 // Swagger에 JWT 인증 스키마 추가
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddSwaggerGen(options =>
                                {
-                                   c.SwaggerDoc("v1", new OpenApiInfo { Title = "MatajuApi", Version = "v1" });
+                                   options.SwaggerDoc("v1", new OpenApiInfo { Title = "MatajuApi", Version = "v1" });
 
                                    // Bearer 인증 스키마 정의
-                                   c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                                   options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                                                                      {
                                                                          In = ParameterLocation.Header,
                                                                          Name = "Authorization",
@@ -52,7 +52,7 @@ builder.Services.AddSwaggerGen(c =>
                                                                      });
 
                                    // Bearer 인증 스키마를 기본 인증 방식으로 추가
-                                   c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                                   options.AddSecurityRequirement(new OpenApiSecurityRequirement
                                                             {
                                                                 {
                                                                     new OpenApiSecurityScheme
@@ -66,11 +66,11 @@ builder.Services.AddSwaggerGen(c =>
                                                                     Array.Empty<string>()
                                                                 }
                                                             });
-                                   // 환경 변수로 서버 경로 추가
+                                   // 앱의 환경 변수 설정으로 서버 베이스 경로 변경가능하게. 예: 호스트뒤에 "/dev"를 api 베이스로 설정가능
                                    var swaggerBasePath = Environment.GetEnvironmentVariable("SwaggerBasePath") ?? string.Empty;
                                    if (!string.IsNullOrEmpty(swaggerBasePath))
                                    {
-                                       c.AddServer(new OpenApiServer
+                                       options.AddServer(new OpenApiServer
                                                    {
                                                        Url = swaggerBasePath,
                                                        Description = "Base URL for the API"
