@@ -7,7 +7,7 @@ namespace MatajuApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-// [Authorize] TODO: 활성화 및 Role 확인
+// [Authorize(Roles = "admin")] // TODO: 활성화
 public class AdminController : ControllerBase
 {
     private readonly IRepository<Unit> _unitRepo;

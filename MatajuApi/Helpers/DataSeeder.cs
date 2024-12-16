@@ -13,10 +13,12 @@ public static class DataSeeder
     /// </summary>
     /// <param name="houseRepo">House 테이블 레포지토리</param>
     /// <param name="unitRepo">Unit 테이블 레포지토리</param>
-    public static void SeedData(IRepository<House> houseRepo, IRepository<Unit> unitRepo)
+    /// <param name="userRepo">User 테이블 레포지토리</param>
+    public static void SeedData(IRepository<House> houseRepo, IRepository<Unit> unitRepo, IRepository<User> userRepo)
     {
         SeedHouses(houseRepo);
         SeedUnits(houseRepo, unitRepo);
+        SeedUsers(userRepo);
     }
 
     /// <summary>
@@ -99,5 +101,42 @@ public static class DataSeeder
                              EndDate = null
                          };
         }
+    }
+
+    /// <summary>
+    /// 임시 유저 시딩. 하나의 디폴트 User와 Admin을 추가한다.
+    /// TODO: DB전환시 삭제하기
+    /// </summary>
+    /// <param name="userRepo">User 테이블 레포지토리</param>
+    private static void SeedUsers(IRepository<User> userRepo)
+    {
+        if (userRepo.Find(u => true).Any()) return;
+
+        // 유저 생성
+        var users = new List<User>();
+
+        // 디폴트 유저 추가
+        string userPasswordHash = PwdHasher.GenerateHash("string", out string userSalt);
+        users.Add(new User
+                  {
+                      Name = "string",
+                      Password = userPasswordHash, //"string"
+                      Salt = userSalt,
+                      Nickname = "첫손님",
+                      Roles = "user"
+                  });
+
+        // Admin 유저 추가
+        string adminPasswordHash = PwdHasher.GenerateHash("vapor", out string adminSalt);
+        users.Add(new User
+                  {
+                      Name = "admin",
+                      Password = adminPasswordHash, //"vapor"
+                      Salt = adminSalt,
+                      Nickname = "창고지기",
+                      Roles = "admin"
+                  });
+
+        userRepo.SetInitialData(users);
     }
 }
