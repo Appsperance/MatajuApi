@@ -22,9 +22,10 @@ public class BookingController : ControllerBase
     /// <summary>
     /// 생성자 -  DI Container에서 매개변수로 레포지토리 주입
     /// </summary>
-    /// <param name="userTableRepo">User 레포지토리</param>
-    /// <param name="houseTableRepo">Unit 레포지토리</param>
-    /// <param name="unitTableRepo">Unit 레포지토리</param>
+    /// <param name="userTableRepo">회원 테이블 레포지토리</param>
+    /// <param name="houseTableRepo">창고지점 테이블 레포지토리</param>
+    /// <param name="unitTableRepo">창고유닛 테이블 레포지토리</param>
+    /// <param name="bookingRepo">예약현황 테이블 레포지토리</param>
     public BookingController(IRepository<User> userTableRepo,
                              IRepository<House> houseTableRepo,
                              IRepository<Unit> unitTableRepo,
@@ -107,7 +108,8 @@ public class BookingController : ControllerBase
                               Charge = totalPrice,
                               PaymentDate = null,
                               PaymentMethod = null,
-                              Status = BookingStatus.Pending
+                              Status = BookingStatus.Pending,
+                              UserNote = request.UserNote
                           };
 
         _bookingTableRepo.Add(booking);
