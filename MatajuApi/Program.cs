@@ -41,40 +41,40 @@ builder.Services.AddSwaggerGen(options =>
 
                                    // Bearer 인증 스키마 정의
                                    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                                                                     {
-                                                                         In = ParameterLocation.Header,
-                                                                         Name = "Authorization",
-                                                                         Type = SecuritySchemeType.ApiKey,
-                                                                         Scheme = "Bearer",
-                                                                         BearerFormat = "JWT",
-                                                                         Description =
-                                                                             "Bearer schem을 사용한 JWT Authorization header. 예제: \"Bearer {token}\""
-                                                                     });
+                                                                           {
+                                                                               In = ParameterLocation.Header,
+                                                                               Name = "Authorization",
+                                                                               Type = SecuritySchemeType.ApiKey,
+                                                                               Scheme = "Bearer",
+                                                                               BearerFormat = "JWT",
+                                                                               Description =
+                                                                                   "Bearer schem을 사용한 JWT Authorization header. 예제: \"Bearer {token}\""
+                                                                           });
 
                                    // Bearer 인증 스키마를 기본 인증 방식으로 추가
                                    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-                                                            {
-                                                                {
-                                                                    new OpenApiSecurityScheme
-                                                                    {
-                                                                        Reference = new OpenApiReference
-                                                                                    {
-                                                                                        Type = ReferenceType.SecurityScheme,
-                                                                                        Id = "Bearer"
-                                                                                    }
-                                                                    },
-                                                                    Array.Empty<string>()
-                                                                }
-                                                            });
+                                                                  {
+                                                                      {
+                                                                          new OpenApiSecurityScheme
+                                                                          {
+                                                                              Reference = new OpenApiReference
+                                                                                          {
+                                                                                              Type = ReferenceType.SecurityScheme,
+                                                                                              Id = "Bearer"
+                                                                                          }
+                                                                          },
+                                                                          Array.Empty<string>()
+                                                                      }
+                                                                  });
                                    // 앱의 환경 변수 설정으로 서버 베이스 경로 변경가능하게. 예: 호스트뒤에 "/dev"를 api 베이스로 설정가능
                                    var swaggerBasePath = Environment.GetEnvironmentVariable("SwaggerBasePath") ?? string.Empty;
                                    if (!string.IsNullOrEmpty(swaggerBasePath))
                                    {
                                        options.AddServer(new OpenApiServer
-                                                   {
-                                                       Url = swaggerBasePath,
-                                                       Description = "Base URL for the API"
-                                                   });
+                                                         {
+                                                             Url = swaggerBasePath,
+                                                             Description = "Base URL for the API"
+                                                         });
                                    }
                                });
 builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
@@ -102,6 +102,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// 데이터 시딩 TODO: DB레포로 전환
+IRepository<House>? houseRepo = app.Services.GetRequiredService<IRepository<House>>();
+IRepository<Unit>? unitRepo = app.Services.GetRequiredService<IRepository<Unit>>();
+DataSeeder.SeedData(houseRepo, unitRepo);
 /***************
  * Run the host
  **************/
