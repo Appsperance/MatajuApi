@@ -127,12 +127,17 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-//커밋 기록용 주석 추가
 // 데이터 시딩 TODO: DB레포로 전환
-IRepository<House>? houseRepo = app.Services.GetRequiredService<IRepository<House>>();
-IRepository<Unit>? unitRepo = app.Services.GetRequiredService<IRepository<Unit>>();
-IRepository<User>? userRepo = app.Services.GetRequiredService<IRepository<User>>();
-DataSeeder.SeedData(houseRepo, unitRepo, userRepo);
+using (IServiceScope? scope = app.Services.CreateScope())
+{
+    IServiceProvider? scopedServices = scope.ServiceProvider;
+    IRepository<House>? houseRepo = scopedServices.GetRequiredService<IRepository<House>>();
+    IRepository<Unit>? unitRepo = scopedServices.GetRequiredService<IRepository<Unit>>();
+    IRepository<User>? userRepo = scopedServices.GetRequiredService<IRepository<User>>();
+
+    DataSeeder.SeedData(houseRepo, unitRepo, userRepo);
+}
+
 /***************
  * Run the host
  **************/
