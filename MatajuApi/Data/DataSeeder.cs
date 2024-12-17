@@ -1,7 +1,8 @@
 using MatajuApi.Models;
 using MatajuApi.Repositories;
+using MatajuApi.Helpers;
 
-namespace MatajuApi.Helpers;
+namespace MatajuApi.Data;
 
 /// <summary>
 /// House와 Unit 초기데이터를 레포지토리에 기록

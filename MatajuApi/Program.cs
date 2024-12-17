@@ -113,7 +113,7 @@ app.MapControllers();
 IRepository<House>? houseRepo = app.Services.GetRequiredService<IRepository<House>>();
 IRepository<Unit>? unitRepo = app.Services.GetRequiredService<IRepository<Unit>>();
 IRepository<User>? userRepo = app.Services.GetRequiredService<IRepository<User>>();
-DataSeeder.SeedData(houseRepo, unitRepo, userRepo);
+MatajuApi.Data.DataSeeder.SeedData(houseRepo, unitRepo, userRepo);
 /***************
  * Run the host
  **************/
