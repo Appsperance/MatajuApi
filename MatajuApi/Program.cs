@@ -89,7 +89,17 @@ builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
 builder.Services.AddSingleton<IRepository<House>, InMemoryRepository<House>>();
 builder.Services.AddSingleton<IRepository<Unit>, InMemoryRepository<Unit>>();
 builder.Services.AddSingleton<IRepository<Booking>, InMemoryRepository<Booking>>();
-builder.Services.AddTransient<IDataSeeder, DataSeederInMemory>();
+
+//환경 선택적 데이터시딩 구현체 주입
+if (builder.Environment.IsEnvironment("Local"))
+{
+    builder.Services.AddTransient<IDataSeeder, DataSeederInMemory>();
+}
+else
+{
+    builder.Services.AddTransient<IDataSeeder, DataSeederEfCore>();
+}
+
 var app = builder.Build();
 
 

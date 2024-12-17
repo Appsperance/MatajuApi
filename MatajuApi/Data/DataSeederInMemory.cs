@@ -14,6 +14,13 @@ public class DataSeederInMemory : IDataSeeder
     private readonly IRepository<User> _userRepo;
 
     /// <summary>
+    /// 기본 생성자: 공통로직 재사용 용도
+    /// </summary>
+    public DataSeederInMemory()
+    {
+    }
+
+    /// <summary>
     /// 생성자를 통한 레포지토리 주입
     /// </summary>
     /// <param name="houseRepo">House 테이블 레포지토리</param>
@@ -53,7 +60,6 @@ public class DataSeederInMemory : IDataSeeder
         foreach (var house in _houseRepo.Find(h => true))
         {
             int houseId = house.Id;
-
             int numberOfSizeL = random.Next(5, 9);
             int numberOfSizeM = random.Next(10, 21);
             int numberOfSizeS = random.Next(10, 16);
@@ -75,7 +81,7 @@ public class DataSeederInMemory : IDataSeeder
     /// User 테이블에 하나의 유저와 관리자를 생성한다.
     /// </summary>
     /// <returns></returns>
-    private List<User> GenerateUsers()
+    internal List<User> GenerateUsers()
     {
         return new List<User>
                {
@@ -98,7 +104,7 @@ public class DataSeederInMemory : IDataSeeder
     /// House 테이블(창고지점) 레코드 생성 
     /// </summary>
     /// <returns></returns>
-    private List<House> GenerateHouses()
+    internal List<House> GenerateHouses()
     {
         return new List<House>
                {
@@ -128,7 +134,7 @@ public class DataSeederInMemory : IDataSeeder
     /// <param name="medium">UnitSize.M 사이즈 갯수</param>
     /// <param name="large">UnitSize.L 사이즈 갯수</param>
     /// <returns></returns>
-    private IEnumerable<Unit> GenerateUnits(int houseId, int small, int medium, int large)
+    internal IEnumerable<Unit> GenerateUnits(int houseId, int small, int medium, int large)
     {
         for (int i = 0; i < small; i++)
             yield return new Unit { HouseId = houseId, Size = UnitSize.S, Status = UnitStatus.Available };
