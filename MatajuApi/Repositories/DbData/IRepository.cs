@@ -51,12 +51,12 @@ public interface IRepository<T> where T : class
 #region Data Seeding : //TODO: 삭제
 
     /// <summary>
-    /// 모든 데이터를 삭제
+    /// 테이블의 모든 데이터를 삭제
     /// </summary>
     void Clear();
 
     /// <summary>
-    /// 정해진 초기 데이터 시딩. Id까지 초기화
+    /// 테이블에 정해진 초기 데이터 시딩. Id까지 초기화
     /// </summary>
     /// <param name="entities">초기화할 데이터 목록</param>
     void SetInitialData(IEnumerable<T> entities);

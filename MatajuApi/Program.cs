@@ -90,10 +90,23 @@ builder.Services.AddSwaggerGen(options =>
                                                          });
                                    }
                                });
-builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
-builder.Services.AddSingleton<IRepository<House>, InMemoryRepository<House>>();
-builder.Services.AddSingleton<IRepository<Unit>, InMemoryRepository<Unit>>();
-builder.Services.AddSingleton<IRepository<Booking>, InMemoryRepository<Booking>>();
+
+//환경에 따른 테이블 레포지토리 선택 
+if (builder.Environment.IsEnvironment("Local"))
+{
+    builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
+    builder.Services.AddSingleton<IRepository<House>, InMemoryRepository<House>>();
+    builder.Services.AddSingleton<IRepository<Unit>, InMemoryRepository<Unit>>();
+    builder.Services.AddSingleton<IRepository<Booking>, InMemoryRepository<Booking>>();
+}
+else
+{
+    builder.Services.AddScoped<IRepository<User>, DbEfCoreRepository<User>>();
+    builder.Services.AddScoped<IRepository<House>, DbEfCoreRepository<House>>();
+    builder.Services.AddScoped<IRepository<Unit>, DbEfCoreRepository<Unit>>();
+    builder.Services.AddScoped<IRepository<Booking>, DbEfCoreRepository<Booking>>();
+}
+
 var app = builder.Build();
 
 
