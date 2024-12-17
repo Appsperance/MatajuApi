@@ -127,7 +127,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-//커밋 기록용 주석
+//커밋 기록용 주석 추가
 // 데이터 시딩 TODO: DB레포로 전환
 IRepository<House>? houseRepo = app.Services.GetRequiredService<IRepository<House>>();
 IRepository<Unit>? unitRepo = app.Services.GetRequiredService<IRepository<Unit>>();
