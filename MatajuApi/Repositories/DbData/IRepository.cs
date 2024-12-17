@@ -48,8 +48,7 @@ public interface IRepository<T> where T : class
     /// <param name="id">테이블의 Id칼럼(PK) 값</param>
     void Delete(int id);
 
-#region Data Seeding : //TODO: 삭제
-
+#region Data Seeding : 
     /// <summary>
     /// 테이블의 모든 데이터를 삭제
     /// </summary>

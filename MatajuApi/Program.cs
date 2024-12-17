@@ -127,7 +127,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-// 데이터 시딩 TODO: DB레포로 전환
+// 데이터 시딩
 using (IServiceScope? scope = app.Services.CreateScope())
 {
     IServiceProvider? scopedServices = scope.ServiceProvider;
