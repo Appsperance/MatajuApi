@@ -1,3 +1,4 @@
+using MatajuApi.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
@@ -5,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using MatajuApi.Helpers;
 using MatajuApi.Models;
 using MatajuApi.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 /*******************
  * Web Host Builder
@@ -18,7 +20,11 @@ builder.Configuration
        .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 builder.Configuration.AddEnvironmentVariables();
 
-Console.WriteLine($"Environment-------: {builder.Environment.EnvironmentName}");
+// DbContext 등록
+string? connectionStringForMySql = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+                                                //MySQL ADO Provider
+                                                options.UseMySql(connectionStringForMySql, ServerVersion.AutoDetect(connectionStringForMySql)));
 
 // JWT 인증 설정
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -84,10 +90,23 @@ builder.Services.AddSwaggerGen(options =>
                                                          });
                                    }
                                });
-builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
-builder.Services.AddSingleton<IRepository<House>, InMemoryRepository<House>>();
-builder.Services.AddSingleton<IRepository<Unit>, InMemoryRepository<Unit>>();
-builder.Services.AddSingleton<IRepository<Booking>, InMemoryRepository<Booking>>();
+
+//환경에 따른 테이블 레포지토리 선택 
+if (builder.Environment.IsEnvironment("Local"))
+{
+    builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
+    builder.Services.AddSingleton<IRepository<House>, InMemoryRepository<House>>();
+    builder.Services.AddSingleton<IRepository<Unit>, InMemoryRepository<Unit>>();
+    builder.Services.AddSingleton<IRepository<Booking>, InMemoryRepository<Booking>>();
+}
+else
+{
+    builder.Services.AddScoped<IRepository<User>, DbEfCoreRepository<User>>();
+    builder.Services.AddScoped<IRepository<House>, DbEfCoreRepository<House>>();
+    builder.Services.AddScoped<IRepository<Unit>, DbEfCoreRepository<Unit>>();
+    builder.Services.AddScoped<IRepository<Booking>, DbEfCoreRepository<Booking>>();
+}
+
 var app = builder.Build();
 
 
@@ -108,12 +127,17 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 // 데이터 시딩 TODO: DB레포로 전환
-IRepository<House>? houseRepo = app.Services.GetRequiredService<IRepository<House>>();
-IRepository<Unit>? unitRepo = app.Services.GetRequiredService<IRepository<Unit>>();
-IRepository<User>? userRepo = app.Services.GetRequiredService<IRepository<User>>();
-DataSeeder.SeedData(houseRepo, unitRepo, userRepo);
+using (IServiceScope? scope = app.Services.CreateScope())
+{
+    IServiceProvider? scopedServices = scope.ServiceProvider;
+    IRepository<House>? houseRepo = scopedServices.GetRequiredService<IRepository<House>>();
+    IRepository<Unit>? unitRepo = scopedServices.GetRequiredService<IRepository<Unit>>();
+    IRepository<User>? userRepo = scopedServices.GetRequiredService<IRepository<User>>();
+
+    DataSeeder.SeedData(houseRepo, unitRepo, userRepo);
+}
+
 /***************
  * Run the host
  **************/
