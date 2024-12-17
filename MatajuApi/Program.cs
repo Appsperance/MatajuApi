@@ -1,3 +1,4 @@
+using MatajuApi.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
@@ -88,6 +89,7 @@ builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
 builder.Services.AddSingleton<IRepository<House>, InMemoryRepository<House>>();
 builder.Services.AddSingleton<IRepository<Unit>, InMemoryRepository<Unit>>();
 builder.Services.AddSingleton<IRepository<Booking>, InMemoryRepository<Booking>>();
+builder.Services.AddTransient<IDataSeeder, DataSeederInMemory>();
 var app = builder.Build();
 
 
@@ -109,11 +111,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// 데이터 시딩 TODO: DB레포로 전환
-IRepository<House>? houseRepo = app.Services.GetRequiredService<IRepository<House>>();
-IRepository<Unit>? unitRepo = app.Services.GetRequiredService<IRepository<Unit>>();
-IRepository<User>? userRepo = app.Services.GetRequiredService<IRepository<User>>();
-MatajuApi.Data.DataSeeder.SeedData(houseRepo, unitRepo, userRepo);
+//테이블 데이터 시딩
+IDataSeeder? dataSeeder = app.Services.CreateScope().ServiceProvider.GetRequiredService<IDataSeeder>();
+dataSeeder.SeedAllData();
 /***************
  * Run the host
  **************/
