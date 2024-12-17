@@ -1,3 +1,4 @@
+using MatajuApi.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
@@ -5,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using MatajuApi.Helpers;
 using MatajuApi.Models;
 using MatajuApi.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 /*******************
  * Web Host Builder
@@ -18,7 +20,11 @@ builder.Configuration
        .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 builder.Configuration.AddEnvironmentVariables();
 
-Console.WriteLine($"Environment-------: {builder.Environment.EnvironmentName}");
+// DbContext 등록
+string? connectionStringForMySql = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+                                                //MySQL ADO Provider
+                                                options.UseMySql(connectionStringForMySql, ServerVersion.AutoDetect(connectionStringForMySql)));
 
 // JWT 인증 설정
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
