@@ -13,6 +13,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 /*****************   DI Container   ******************/
+builder.Configuration
+       .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+       .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddEnvironmentVariables();
+
+Console.WriteLine($"Environment-------: {builder.Environment.EnvironmentName}");
+
 // JWT 인증 설정
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
        .AddJwtBearer(options =>
@@ -87,7 +94,7 @@ var app = builder.Build();
 /********************************************
 // * HTTP request 파이프라인에 미들웨어 추가
 // ******************************************/
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Local"))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
