@@ -7,20 +7,18 @@ namespace MatajuApi.Models;
 /// </summary>
 public class BookingApprovalReqDto
 {
-    /// <summary>
-    /// 확인된 비용 지불 날짜
-    /// </summary>
-    [Required]
-    public DateTime PaymentDate { get; set; }
-
-    /// <summary>
-    /// 확인된 비용 지불 수단
-    /// </summary>
-    [Required]
-    public PaymentMethod PaymentMethod { get; set; }
-
-    /// <summary>
-    /// 관리자 메모
-    /// </summary>
-    public string AdminNote { get; set; } = string.Empty;
+  /// <summary>
+  /// 확인된 비용 지불 날짜
+  /// </summary>
+  [Required]
+  public DateTime PaymentDate { get; set; }
+  /// <summary>
+  /// 확인된 비용 지불 수단
+  /// </summary>
+  [Required]
+  public PaymentMethod PaymentMethod { get; set; }
+  /// <summary>
+  /// 관리자 메모
+  /// </summary>
+  public string AdminNote { get; set; } = string.Empty;
 }

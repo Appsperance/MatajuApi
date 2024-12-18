@@ -15,96 +15,77 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 /*****************   DI Container   ******************/
-builder.Configuration
-       .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
        .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 builder.Configuration.AddEnvironmentVariables();
 
 // DbContext 등록
 string? connectionStringForMySql = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<AppDbContext>(options =>
-                                                //MySQL ADO Provider
-                                                options.UseMySql(connectionStringForMySql, ServerVersion.AutoDetect(connectionStringForMySql)));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql(connectionStringForMySql, ServerVersion.AutoDetect(connectionStringForMySql))); //MySQL ADO Provider
 
 // JWT 인증 설정
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-       .AddJwtBearer(options =>
-                     {
-                         options.TokenValidationParameters = new TokenValidationParameters
-                                                             {
-                                                                 ValidateIssuer = true,
-                                                                 ValidateAudience = true,
-                                                                 ValidateLifetime = true,
-                                                                 ValidateIssuerSigningKey = true,
-                                                                 ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                                                                 ValidAudience = builder.Configuration["Jwt:Audience"],
-                                                                 IssuerSigningKey = JwtHelper.GetPublicKey(builder.Configuration)
-                                                             };
-                     });
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+                                                                                        {
+                                                                                          options.TokenValidationParameters =
+                                                                                            new TokenValidationParameters
+                                                                                            {
+                                                                                              ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true,
+                                                                                              ValidateIssuerSigningKey = true, ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                                                                                              ValidAudience = builder.Configuration["Jwt:Audience"],
+                                                                                              IssuerSigningKey = JwtHelper.GetPublicKey(builder.Configuration)
+                                                                                            };
+                                                                                        });
 builder.Services.AddControllers().AddJsonOptions(options =>
                                                  {
-                                                     options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+                                                   options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
                                                  });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 // Swagger에 JWT 인증 스키마 추가
 builder.Services.AddSwaggerGen(options =>
                                {
-                                   options.SwaggerDoc("v1", new OpenApiInfo { Title = "MatajuApi", Version = "v1" });
+                                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "MatajuApi", Version = "v1" });
 
-                                   // Bearer 인증 스키마 정의
-                                   options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                                                                           {
-                                                                               In = ParameterLocation.Header,
-                                                                               Name = "Authorization",
-                                                                               Type = SecuritySchemeType.ApiKey,
-                                                                               Scheme = "Bearer",
-                                                                               BearerFormat = "JWT",
-                                                                               Description =
-                                                                                   "Bearer schem을 사용한 JWT Authorization header. 예제: \"Bearer {token}\""
-                                                                           });
+                                 // Bearer 인증 스키마 정의
+                                 options.AddSecurityDefinition("Bearer",
+                                                               new OpenApiSecurityScheme
+                                                               {
+                                                                 In = ParameterLocation.Header, Name = "Authorization", Type = SecuritySchemeType.ApiKey, Scheme = "Bearer",
+                                                                 BearerFormat = "JWT", Description = "Bearer schem을 사용한 JWT Authorization header. 예제: \"Bearer {token}\""
+                                                               });
 
-                                   // Bearer 인증 스키마를 기본 인증 방식으로 추가
-                                   options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                                 // Bearer 인증 스키마를 기본 인증 방식으로 추가
+                                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                                                                {
                                                                   {
-                                                                      {
-                                                                          new OpenApiSecurityScheme
-                                                                          {
-                                                                              Reference = new OpenApiReference
-                                                                                          {
-                                                                                              Type = ReferenceType.SecurityScheme,
-                                                                                              Id = "Bearer"
-                                                                                          }
-                                                                          },
-                                                                          Array.Empty<string>()
-                                                                      }
-                                                                  });
-                                   // 앱의 환경 변수 설정으로 서버 베이스 경로 변경가능하게. 예: 호스트뒤에 "/dev"를 api 베이스로 설정가능
-                                   var swaggerBasePath = Environment.GetEnvironmentVariable("SwaggerBasePath") ?? string.Empty;
-                                   if (!string.IsNullOrEmpty(swaggerBasePath))
-                                   {
-                                       options.AddServer(new OpenApiServer
-                                                         {
-                                                             Url = swaggerBasePath,
-                                                             Description = "Base URL for the API"
-                                                         });
-                                   }
+                                                                    new OpenApiSecurityScheme
+                                                                    {
+                                                                      Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                                                                    },
+                                                                    Array.Empty<string>()
+                                                                  }
+                                                                });
+                                 // 앱의 환경 변수 설정으로 서버 베이스 경로 변경가능하게. 예: 호스트뒤에 "/dev"를 api 베이스로 설정가능
+                                 var swaggerBasePath = Environment.GetEnvironmentVariable("SwaggerBasePath") ?? string.Empty;
+                                 if (!string.IsNullOrEmpty(swaggerBasePath))
+                                 {
+                                   options.AddServer(new OpenApiServer { Url = swaggerBasePath, Description = "Base URL for the API" });
+                                 }
                                });
 
 //환경에 따른 테이블 레포지토리 선택 
 if (builder.Environment.IsEnvironment("Local"))
 {
-    builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
-    builder.Services.AddSingleton<IRepository<House>, InMemoryRepository<House>>();
-    builder.Services.AddSingleton<IRepository<Unit>, InMemoryRepository<Unit>>();
-    builder.Services.AddSingleton<IRepository<Booking>, InMemoryRepository<Booking>>();
-}
-else
+  builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
+  builder.Services.AddSingleton<IRepository<House>, InMemoryRepository<House>>();
+  builder.Services.AddSingleton<IRepository<Unit>, InMemoryRepository<Unit>>();
+  builder.Services.AddSingleton<IRepository<Booking>, InMemoryRepository<Booking>>();
+} else
 {
-    builder.Services.AddScoped<IRepository<User>, DbEfCoreRepository<User>>();
-    builder.Services.AddScoped<IRepository<House>, DbEfCoreRepository<House>>();
-    builder.Services.AddScoped<IRepository<Unit>, DbEfCoreRepository<Unit>>();
-    builder.Services.AddScoped<IRepository<Booking>, DbEfCoreRepository<Booking>>();
+  builder.Services.AddScoped<IRepository<User>, DbEfCoreRepository<User>>();
+  builder.Services.AddScoped<IRepository<House>, DbEfCoreRepository<House>>();
+  builder.Services.AddScoped<IRepository<Unit>, DbEfCoreRepository<Unit>>();
+  builder.Services.AddScoped<IRepository<Booking>, DbEfCoreRepository<Booking>>();
 }
 
 var app = builder.Build();
@@ -115,8 +96,8 @@ var app = builder.Build();
 // ******************************************/
 if (app.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Local"))
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+  app.UseSwagger();
+  app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -130,12 +111,12 @@ app.MapControllers();
 // 데이터 시딩
 using (IServiceScope? scope = app.Services.CreateScope())
 {
-    IServiceProvider? scopedServices = scope.ServiceProvider;
-    IRepository<House>? houseRepo = scopedServices.GetRequiredService<IRepository<House>>();
-    IRepository<Unit>? unitRepo = scopedServices.GetRequiredService<IRepository<Unit>>();
-    IRepository<User>? userRepo = scopedServices.GetRequiredService<IRepository<User>>();
+  IServiceProvider? scopedServices = scope.ServiceProvider;
+  IRepository<House>? houseRepo = scopedServices.GetRequiredService<IRepository<House>>();
+  IRepository<Unit>? unitRepo = scopedServices.GetRequiredService<IRepository<Unit>>();
+  IRepository<User>? userRepo = scopedServices.GetRequiredService<IRepository<User>>();
 
-    DataSeeder.SeedData(houseRepo, unitRepo, userRepo);
+  DataSeeder.SeedData(houseRepo, unitRepo, userRepo);
 }
 
 /***************

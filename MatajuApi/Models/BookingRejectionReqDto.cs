@@ -7,9 +7,9 @@ namespace MatajuApi.Models;
 /// </summary>
 public class BookingRejectionReqDto
 {
-    /// <summary>
-    /// 관리자 메모
-    /// </summary>
-    [Required]
-    public string AdminNote { get; set; } = string.Empty;
+  /// <summary>
+  /// 관리자 메모
+  /// </summary>
+  [Required]
+  public string AdminNote { get; set; } = string.Empty;
 }
