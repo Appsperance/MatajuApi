@@ -11,10 +11,12 @@ namespace MatajuApi.Controllers
   public class HomeController : Controller
   {
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public HomeController(IHttpClientFactory httpClientFactory)
+    public HomeController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
     {
       _httpClientFactory = httpClientFactory;
+      _httpContextAccessor = httpContextAccessor;
     }
 
     [HttpGet("/")]
@@ -26,26 +28,30 @@ namespace MatajuApi.Controllers
     [HttpPost("/login")]
     public async Task<IActionResult> Login(string username, string password)
     {
-      // API 호출
-      var httpClient = _httpClientFactory.CreateClient();
+      HttpClient? httpClient = _httpClientFactory.CreateClient();
+
+      // 현재 요청의 호스트 가져오기
+      HttpRequest? request = _httpContextAccessor.HttpContext.Request;
+      httpClient.BaseAddress = new Uri($"{request.Scheme}://{request.Host}");
+
       var loginInput = new { Name = username, Password = password };
-      var content = new StringContent(JsonSerializer.Serialize(loginInput), Encoding.UTF8, "application/json");
-      var response = await httpClient.PostAsync("https://your-api-domain/api/user/login", content);
+      StringContent? content = new StringContent(JsonSerializer.Serialize(loginInput), Encoding.UTF8, "application/json");
+
+      // 상대 경로를 사용하여 API 요청
+      HttpResponseMessage? response = await httpClient.PostAsync("/api/user/login", content);
 
       if (response.IsSuccessStatusCode)
       {
-        var responseContent = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<LoginResponse>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        string? responseContent = await response.Content.ReadAsStringAsync();
+        LoginResponse? apiResponse = JsonSerializer.Deserialize<LoginResponse>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        // JWT 토큰을 쿠키에 저장
         Response.Cookies.Append("token", apiResponse.Token, new CookieOptions { HttpOnly = true, Path = "/", Expires = DateTimeOffset.UtcNow.AddDays(1) });
 
         return RedirectToAction("Admin");
       }
 
-      // 로그인 실패 처리
       ViewData["Error"] = "Invalid username or password";
-      return View("index");
+      return View("Index");
     }
 
     [HttpGet("/admin")]

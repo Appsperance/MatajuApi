@@ -36,9 +36,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
                                                                                             };
                                                                                         });
 builder.Services.AddControllersWithViews().AddJsonOptions(options =>
-                                                           {
-                                                             options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-                                                           });
+                                                          {
+                                                            options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+                                                          });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 // Swagger에 JWT 인증 스키마 추가
@@ -89,7 +89,9 @@ if (builder.Environment.IsEnvironment("Local"))
 }
 
 
-builder.Services.AddHttpClient(); //IHttpClientFactory
+//IHttpClientFactory && 현재 요청 컨텍스트 접근 설정(호스트 정보)
+builder.Services.AddHttpClient();
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
