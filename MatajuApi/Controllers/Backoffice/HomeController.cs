@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using MatajuApi.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MatajuApi.Controllers
 {
@@ -46,16 +47,19 @@ namespace MatajuApi.Controllers
         string? responseContent = await response.Content.ReadAsStringAsync();
         LoginResponse? apiResponse = JsonSerializer.Deserialize<LoginResponse>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        Response.Cookies.Append("token", apiResponse.Token, new CookieOptions { HttpOnly = true, Path = "/", Expires = DateTimeOffset.UtcNow.AddDays(1) });
+        // "Bearer " 접두사 추가 후 쿠키에 저장
+        string bearerToken = $"Bearer {apiResponse.Token}";
+        Response.Cookies.Append("token", bearerToken, new CookieOptions { HttpOnly = true, Path = "/", Expires = DateTimeOffset.UtcNow.AddDays(1) });
 
         return RedirectToAction("Admin");
       }
 
-      ViewData["Error"] = "Invalid username or password";
+      ViewData["Error"] = "ID 또는 Password가 맞지 않습니다";
       return View("Index");
     }
 
     [HttpGet("/admin")]
+    [Authorize(Roles = "admin")]
     public IActionResult Admin()
     {
       return View();

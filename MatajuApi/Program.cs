@@ -26,15 +26,44 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql(connecti
 // JWT 인증 설정
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
                                                                                         {
-                                                                                          options.TokenValidationParameters =
-                                                                                            new TokenValidationParameters
-                                                                                            {
-                                                                                              ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true,
-                                                                                              ValidateIssuerSigningKey = true, ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                                                                                              ValidAudience = builder.Configuration["Jwt:Audience"],
-                                                                                              IssuerSigningKey = JwtHelper.GetPublicKey(builder.Configuration)
-                                                                                            };
+                                                                                          options.TokenValidationParameters = new TokenValidationParameters
+                                                                                                                              {
+                                                                                                                                ValidateIssuer = true, ValidateAudience = true,
+                                                                                                                                ValidateLifetime = true,
+                                                                                                                                ValidateIssuerSigningKey = true,
+                                                                                                                                ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                                                                                                                                ValidAudience =
+                                                                                                                                  builder.Configuration["Jwt:Audience"],
+                                                                                                                                IssuerSigningKey =
+                                                                                                                                  JwtHelper.GetPublicKey(builder.Configuration),
+                                                                                                                                RoleClaimType =
+                                                                                                                                  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+                                                                                                                              };
+
+                                                                                          // 쿠키에서 토큰을 읽는 이벤트 설정
+                                                                                          options.Events = new JwtBearerEvents
+                                                                                                           {
+                                                                                                             OnMessageReceived = context =>
+                                                                                                                                 {
+                                                                                                                                   var token =
+                                                                                                                                     context.HttpContext.Request.Cookies["token"];
+                                                                                                                                   if (!string.IsNullOrEmpty(token))
+                                                                                                                                   {
+                                                                                                                                     // 현재 token값이 "Bearer {토큰}" 형태로 저장되었다면 "Bearer " 제거
+                                                                                                                                     if (token.StartsWith("Bearer "))
+                                                                                                                                     {
+                                                                                                                                       token = token.Substring("Bearer ".Length)
+                                                                                                                                                    .Trim();
+                                                                                                                                     }
+
+                                                                                                                                     context.Token = token;
+                                                                                                                                   }
+
+                                                                                                                                   return Task.CompletedTask;
+                                                                                                                                 }
+                                                                                                           };
                                                                                         });
+
 builder.Services.AddControllersWithViews().AddJsonOptions(options =>
                                                           {
                                                             options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
