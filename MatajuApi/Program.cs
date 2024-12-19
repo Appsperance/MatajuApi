@@ -35,10 +35,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
                                                                                               IssuerSigningKey = JwtHelper.GetPublicKey(builder.Configuration)
                                                                                             };
                                                                                         });
-builder.Services.AddControllers().AddJsonOptions(options =>
-                                                 {
-                                                   options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-                                                 });
+builder.Services.AddControllersWithViews().AddJsonOptions(options =>
+                                                           {
+                                                             options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+                                                           });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 // Swagger에 JWT 인증 스키마 추가
@@ -88,6 +88,9 @@ if (builder.Environment.IsEnvironment("Local"))
   builder.Services.AddScoped<IRepository<Booking>, DbEfCoreRepository<Booking>>();
 }
 
+
+builder.Services.AddHttpClient(); //IHttpClientFactory
+
 var app = builder.Build();
 
 
@@ -100,12 +103,16 @@ if (app.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Local"
   app.UseSwaggerUI();
 }
 
+app.UseStaticFiles(); //wwwroot 정적리소스 폴더 지원 추가
 app.UseHttpsRedirection();
 
 
 // 인증 및 권한 미들웨어 추가
 app.UseAuthentication();
 app.UseAuthorization();
+
+// MVC 라우트 추가
+app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllers();
 // 데이터 시딩
