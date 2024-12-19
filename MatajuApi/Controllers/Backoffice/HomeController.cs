@@ -8,6 +8,7 @@ using MatajuApi.Models;
 
 namespace MatajuApi.Controllers
 {
+  [ApiExplorerSettings(IgnoreApi = true)] // Swagger에서 제외
   public class HomeController : Controller
   {
     private readonly IHttpClientFactory _httpClientFactory;
