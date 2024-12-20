@@ -134,7 +134,7 @@ namespace MatajuApi.Controllers
     public IActionResult Logout()
     {
       HttpContext.Response.Cookies.Delete("token");
-      return Redirect("/User/Login");
+      return Redirect("/");
     }
   }
 }
