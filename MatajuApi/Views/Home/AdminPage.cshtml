@@ -50,7 +50,7 @@
                         <strong>예약ID:</strong> @b.Id &nbsp;|&nbsp;
                         <strong>사용자ID:</strong> @b.UserId &nbsp;|&nbsp;
                         <strong>유닛ID:</strong> @b.UnitId &nbsp;|&nbsp;
-                        <strong>요청일:</strong> @b.RequestDate:yyyy-MM-dd HH:mm &nbsp;|&nbsp;
+                        <strong>요청일:</strong> @b.RequestDate.ToString("yyyy-MM-dd HH:mm")
                         <strong>처리업무:</strong> @b.Type &nbsp;|&nbsp;
                         <strong>청구금액:</strong> @b.Charge &nbsp;|&nbsp;
                         <strong>유저메모:</strong> @b.UserNote
@@ -130,7 +130,7 @@
                     <td>@b.Id</td>
                     <td>@b.UserId</td>
                     <td>@b.UnitId</td>
-                    <td>@b.RequestDate:yyyy-MM-dd HH:mm</td>
+                    <td>@b.RequestDate.ToString("yyyy-MM-dd HH:mm")</td>
                     <td>@b.Type</td>
                     <td>@b.Charge</td>
                     <td>@b.UserNote</td>
