@@ -1,0 +1,150 @@
+@model MatajuApi.Models.AdminPageViewModel
+
+@{
+    ViewData["Title"] = "Backoffice Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (User.IsInRole("admin"))
+{
+    <h1 class="mb-4">마타유 관리자 페이지</h1>
+    <form method="post" action="/admin/page/logout" class="mb-3">
+        <button type="submit" class="btn btn-danger">로그아웃</button>
+    </form>
+
+    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Count > 0)
+    {
+        <div class="alert alert-danger">
+            <ul>
+                @foreach (var state in ViewData.ModelState.Values)
+                {
+                    foreach (var error in state.Errors)
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                }
+            </ul>
+        </div>
+    }
+
+    <!-- Pending Bookings Section -->
+    <h2 class="mt-5 mb-3">펜딩중인 예약</h2>
+    <hr class="mb-4"/>
+    @if (Model.PendingBookings == null || !Model.PendingBookings.Any())
+    {
+        <div class="alert alert-secondary">현재 펜딩 상태의 예약이 없습니다.</div>
+    } else
+    {
+        <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+            <tr>
+                <th colspan="7" class="text-center">펜딩 예약 목록</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var b in Model.PendingBookings)
+            {
+                <!-- 첫 줄: 예약 기본 정보 -->
+                <tr>
+                    <td colspan="7">
+                        <strong>예약ID:</strong> @b.Id &nbsp;|&nbsp;
+                        <strong>사용자ID:</strong> @b.UserId &nbsp;|&nbsp;
+                        <strong>유닛ID:</strong> @b.UnitId &nbsp;|&nbsp;
+                        <strong>요청일:</strong> @b.RequestDate:yyyy-MM-dd HH:mm &nbsp;|&nbsp;
+                        <strong>처리업무:</strong> @b.Type &nbsp;|&nbsp;
+                        <strong>청구금액:</strong> @b.Charge &nbsp;|&nbsp;
+                        <strong>유저메모:</strong> @b.UserNote
+                    </td>
+                </tr>
+
+                <!-- 두 번째 줄: 관리자메모, 결제수단, 승인/거부 버튼 -->
+                <tr>
+                    <td colspan="7">
+                        <form method="post" action="/admin/page/process" class="row g-2">
+                            <input type="hidden" name="bookingId" value="@b.Id"/>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label mb-1">관리자 메모</label>
+                                <textarea class="form-control" name="adminNote" rows="2"></textarea>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label mb-1">결제수단(승인시 필수)</label>
+                                <select class="form-select" name="paymentMethod">
+                                    <option value="">(미선택)</option>
+                                    <option value="Cash">현금</option>
+                                    <option value="Card">카드</option>
+                                    <option value="VaporPay">VaporPay</option>
+                                    <option value="BitCoin">BitCoin</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-5 d-flex align-items-end gap-2">
+                                <button type="submit" class="btn btn-success" name="Approve">승인</button>
+                                <button type="submit" class="btn btn-danger" name="Reject">거부</button>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        <div class="alert alert-info mt-3">
+            * 승인 시 결제수단을 반드시 선택하세요.(결제일은 서버에서 현재날짜로 자동 처리)<br/>
+            * 거부 시 관리자메모만 작성하면 됩니다.
+        </div>
+    }
+
+    <!-- Done Bookings (Completed + Rejected) Section -->
+    <h2 class="mt-5 mb-3">처리완료된 예약 (승인/거부 포함)</h2>
+    <hr class="mb-4"/>
+    @if ((Model.CompletedBookings == null || !Model.CompletedBookings.Any()) && (Model.RejectedBookings == null || !Model.RejectedBookings.Any()))
+    {
+        <div class="alert alert-secondary">처리완료된 예약이 없습니다.</div>
+    } else
+    {
+        <!-- 하나의 목록으로 Completed와 Rejected 모두 표시 -->
+        <table class="table table-striped table-sm align-middle">
+            <thead class="table-light">
+            <tr>
+                <th>예약ID</th>
+                <th>사용자ID</th>
+                <th>유닛ID</th>
+                <th>요청일</th>
+                <th>처리업무</th>
+                <th>청구금액</th>
+                <th>유저메모</th>
+                <th>관리자메모</th>
+                <th>상태</th>
+                <th>결제수단</th>
+                <th>결제일</th>
+            </tr>
+            </thead>
+            <tbody>
+            @{
+                var doneList = (Model.CompletedBookings ?? new List<MatajuApi.Models.Booking>()).Concat(Model.RejectedBookings ?? new List<MatajuApi.Models.Booking>()).OrderByDescending(b => b.Id) // 필요하다면 정렬
+                                                                                                .ToList();
+            }
+
+            @foreach (var b in doneList)
+            {
+                <tr>
+                    <td>@b.Id</td>
+                    <td>@b.UserId</td>
+                    <td>@b.UnitId</td>
+                    <td>@b.RequestDate:yyyy-MM-dd HH:mm</td>
+                    <td>@b.Type</td>
+                    <td>@b.Charge</td>
+                    <td>@b.UserNote</td>
+                    <td>@b.AdminNote</td>
+                    <td>@b.Status</td>
+                    <td>@(b.PaymentMethod.HasValue ? b.PaymentMethod.ToString() : "N/A")</td>
+                    <td>@(b.PaymentDate.HasValue ? b.PaymentDate.Value.ToString("yyyy-MM-dd") : "N/A")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+} else
+{
+    <h1>접근 권한이 없습니다</h1>
+    <p>이 페이지에 접근하려면 관리자 권한이 필요합니다.</p>
+}
