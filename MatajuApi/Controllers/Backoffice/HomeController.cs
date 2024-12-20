@@ -70,26 +70,30 @@ namespace MatajuApi.Controllers
 
     [HttpPost("/admin/page/process")]
     [Authorize(Roles = "admin")]
-    public IActionResult Process([FromServices] IRepository<Booking> _bookingRepo, [FromServices] IRepository<Unit> unitRepo, int bookingId, string adminNote,
-                                 DateTime? paymentDate, PaymentMethod? paymentMethod)
+    public IActionResult Process([FromServices] IRepository<Booking> _bookingRepo, [FromServices] IRepository<Unit> unitRepo, int bookingId,
+                                 string? adminNote, // adminNote를 nullable로 처리
+                                 PaymentMethod? paymentMethod)
     {
       var booking = _bookingRepo.GetById(bookingId);
+
       if (booking == null || booking.Status != BookingStatus.Pending)
       {
         return NotFound("해당 예약을 찾을 수 없거나 펜딩 상태가 아닙니다.");
       }
 
+      // 승인 요청 처리
       if (Request.Form.ContainsKey("Approve"))
       {
-        // 승인 시 결제 정보 필수
-        if (!paymentDate.HasValue || !paymentMethod.HasValue)
+        if (!paymentMethod.HasValue)
         {
-          ModelState.AddModelError("", "승인 시 결제일자 및 결제수단이 필요합니다.");
+          ModelState.AddModelError("", "승인 시 결제수단이 필요합니다.");
 
+          // 필요한 데이터를 다시 로드
           var pendingBookings = _bookingRepo.Find(b => b.Status == BookingStatus.Pending).ToList();
           var completedBookings = _bookingRepo.Find(b => b.Status == BookingStatus.Completed).ToList();
+          var rejectedBookings = _bookingRepo.Find(b => b.Status == BookingStatus.Rejected).ToList();
 
-          var vm = new AdminPageViewModel { PendingBookings = pendingBookings, CompletedBookings = completedBookings };
+          var vm = new AdminPageViewModel { PendingBookings = pendingBookings, CompletedBookings = completedBookings, RejectedBookings = rejectedBookings };
 
           return View("AdminPage", vm);
         }
@@ -98,7 +102,7 @@ namespace MatajuApi.Controllers
         booking.Status = BookingStatus.Completed;
         booking.PaymentDate = DateTime.UtcNow;
         booking.PaymentMethod = paymentMethod.Value;
-        booking.AdminNote = adminNote ?? "";
+        booking.AdminNote = adminNote ?? ""; // null이면 빈 문자열로 저장
         _bookingRepo.Update(booking);
 
         var unit = unitRepo.GetById(booking.UnitId);
@@ -107,11 +111,27 @@ namespace MatajuApi.Controllers
           unit.Status = UnitStatus.InUse;
           unitRepo.Update(unit);
         }
-      } else if (Request.Form.ContainsKey("Reject"))
+      }
+      // 거부 요청 처리
+      else if (Request.Form.ContainsKey("Reject"))
       {
+        if (string.IsNullOrWhiteSpace(adminNote))
+        {
+          ModelState.AddModelError("", "거부 시 관리자 메모가 필요합니다.");
+
+          // 필요한 데이터를 다시 로드
+          var pendingBookings = _bookingRepo.Find(b => b.Status == BookingStatus.Pending).ToList();
+          var completedBookings = _bookingRepo.Find(b => b.Status == BookingStatus.Completed).ToList();
+          var rejectedBookings = _bookingRepo.Find(b => b.Status == BookingStatus.Rejected).ToList();
+
+          var vm = new AdminPageViewModel { PendingBookings = pendingBookings, CompletedBookings = completedBookings, RejectedBookings = rejectedBookings };
+
+          return View("AdminPage", vm);
+        }
+
         // 거부 처리
         booking.Status = BookingStatus.Rejected;
-        booking.AdminNote = adminNote ?? "";
+        booking.AdminNote = adminNote ?? ""; // null이면 빈 문자열로 저장
         _bookingRepo.Update(booking);
 
         var unit = unitRepo.GetById(booking.UnitId);
